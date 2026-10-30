@@ -14,29 +14,33 @@
 
         <!-- UI WPF Standard -->
         <StackPanel Grid.Column="0" Background="#F0F0F0">
-            <TextBlock Text="Capture Devices :" FontWeight="Bold" Margin="0,0,0,0"/>
-            <Button Content="Refresh capture devices" Name="Btn_RefreshCaptureDevices" Click="Btn_RefreshCaptureDevices_Click"/>
-            <ListBox Name="Lstbox_CaptureDevices" Height="100" d:ItemsSource="{d:SampleData ItemCount=5}" SelectionChanged="Lstbox_CaptureDevices_SelectionChanged"/>
+            <TextBlock Text="Capture Devices :" FontWeight="Bold" Margin="5,5,5,5"/>
+            <Button Content="Refresh capture devices" Name="Btn_RefreshCaptureDevices" Click="Btn_RefreshCaptureDevices_Click" Margin="5,0,5,5"/>
+            <ListBox Name="Lstbox_CaptureDevices" Height="100" Margin="5,0,5,5" SelectionChanged="Lstbox_CaptureDevices_SelectionChanged" d:ItemsSource="{d:SampleData ItemCount=5}"/>
 
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Sample duration [ms] : " Width="175"/>
-                <TextBox Name="TxtBox_SampleDurationMs" Width="175" PreviewTextInput="TxtBox_Number_Integer_NumberValidation" Text="100"/>
+                <TextBlock Text="Sample duration [ms] : " Width="175" Margin="5,0,0,5"/>
+                <TextBox Name="TxtBox_SampleDurationMs" Width="165" PreviewTextInput="TxtBox_Number_Integer_NumberValidation" Text="100" Margin="0,0,5,5"/>
             </StackPanel>
-            
+
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Duration for the average [ms] : " Width="175"/>
-                <TextBox Name="TxtBox_DurationAverageMs" Width="175" PreviewTextInput="TxtBox_Number_Integer_NumberValidation" Text="5000"/>
+                <TextBlock Text="Duration for the average [ms] : " Width="175" Margin="5,0,0,5"/>
+                <TextBox Name="TxtBox_DurationAverageMs" Width="165" PreviewTextInput="TxtBox_Number_Integer_NumberValidation" Text="5000" Margin="0,0,5,5"/>
             </StackPanel>
-            
+
             <StackPanel Orientation="Horizontal">
-                <Button Content="Start capture" Name="Btn_StartCapture" Width="175" HorizontalAlignment="Left" Click="Btn_StartCapture_Click" IsEnabled="False"/>
-                <Button Content="Stop capture" Name="Btn_StopCapture" Width="175" HorizontalAlignment="Right" Click="Btn_StopCapture_Click" IsEnabled="False"/>
+                <Button Content="Start capture" Name="Btn_StartCapture" Width="165" HorizontalAlignment="Left" Click="Btn_StartCapture_Click" IsEnabled="False" Margin="5,0,5,5"/>
+                <Button Content="Stop capture" Name="Btn_StopCapture" Width="165" HorizontalAlignment="Right" Click="Btn_StopCapture_Click" IsEnabled="False" Margin="5,0,5,5"/>
             </StackPanel>
-            
+
         </StackPanel>
 
-        <!-- Conteneur pour le rendu SFML -->
-        <WindowsFormsHost Grid.Column="1" x:Name="SfmlHost" />
-
+        <StackPanel Grid.Column="1" Background="#F0F0F0">
+            <TextBlock Text="Wave render :" FontWeight="Bold"  Margin="5,5,5,5"/>
+            <!-- Container for SFML -->
+            <WindowsFormsHost Grid.Column="1" x:Name="SfmlHost" Height="200" VerticalAlignment="Top"  Margin="5,0,5,5"/>
+            <ScrollBar Name="ScrollBarSfmlRenderArea" Width="440" Margin="5,0,5,5" Orientation="Horizontal" Minimum="0" Maximum="100" ValueChanged="ScrollBarSfmlRenderArea_ValueChanged"/>
+        </StackPanel>
+        
     </Grid>
 </Window>

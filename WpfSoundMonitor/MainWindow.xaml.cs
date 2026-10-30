@@ -81,6 +81,8 @@ namespace WpfSoundMonitor
             View view = new View(new FloatRect(position, size));
 
             SfmlWindow.SetView(view);
+
+            ScrollBarSfmlRenderArea.Width = WPF_SFML_Surface.Width;
         }
 
         /// <summary>
@@ -91,7 +93,7 @@ namespace WpfSoundMonitor
         private void OnCompositionRendering(object? sender, EventArgs e)
         {
             if (SoundAnalyzer.IsCapturing)
-                Debug.WriteLine(SoundAnalyzer.Debug_SamplesAverageMaxValuesToString());
+                SoundWaveTracer.TraceSoundWave(SoundAnalyzer.SamplesAverageMaxValues.ToArray());
 
             if (SfmlWindow != null)
             {
@@ -100,6 +102,8 @@ namespace WpfSoundMonitor
                 SfmlWindow.Clear(new SFML.Graphics.Color(30, 30, 30));
 
                 // TODO : Draw graph representing sound captured by current capture device
+                if (SoundWaveTracer.DrawableSoundWave != null)
+                    SfmlWindow.Draw(SoundWaveTracer.DrawableSoundWave);
 
                 SfmlWindow.Display();
             }
@@ -199,6 +203,8 @@ namespace WpfSoundMonitor
             }
 
             SoundAnalyzer.Init(CaptureDeviceManager.CurrentWasapiRecorder, sampleDurationMs, durationAverageMs);
+            SoundWaveTracer.Init();
+
             SoundAnalyzer.Start();
         }
 
@@ -217,6 +223,11 @@ namespace WpfSoundMonitor
             SoundAnalyzer.Stop();
         }
 
+        /// <summary>
+        /// Control the user input for the mandatory number input in textbox
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void TxtBox_Number_Integer_NumberValidation(object? sender, TextCompositionEventArgs e)
         {
             string regex_pattern = @"^[\d]*$";
@@ -224,6 +235,11 @@ namespace WpfSoundMonitor
             Regex regex = new Regex(regex_pattern, RegexOptions.None);
 
             e.Handled = !regex.IsMatch(e.Text);
+        }
+
+        private void ScrollBarSfmlRenderArea_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+
         }
 
         #endregion
@@ -253,5 +269,6 @@ namespace WpfSoundMonitor
             Lstbox_CaptureDevices.Items.Clear();
         }
 
+        
     }
 }
