@@ -1,0 +1,42 @@
+﻿<Window x:Class="WpfSoundMonitor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfSoundMonitor"
+        mc:Ignorable="d"
+        Title="WPF Sound Monitor" Height="450" Width="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="350"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- UI WPF Standard -->
+        <StackPanel Grid.Column="0" Background="#F0F0F0">
+            <TextBlock Text="Capture Devices :" FontWeight="Bold" Margin="0,0,0,0"/>
+            <Button Content="Refresh capture devices" Name="Btn_RefreshCaptureDevices" Click="Btn_RefreshCaptureDevices_Click"/>
+            <ListBox Name="Lstbox_CaptureDevices" Height="100" d:ItemsSource="{d:SampleData ItemCount=5}" SelectionChanged="Lstbox_CaptureDevices_SelectionChanged"/>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Sample duration [ms] : " Width="175"/>
+                <TextBox Name="TxtBox_SampleDurationMs" Width="175" PreviewTextInput="TxtBox_Number_Integer_NumberValidation" Text="100"/>
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Duration for the average [ms] : " Width="175"/>
+                <TextBox Name="TxtBox_DurationAverageMs" Width="175" PreviewTextInput="TxtBox_Number_Integer_NumberValidation" Text="5000"/>
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Start capture" Name="Btn_StartCapture" Width="175" HorizontalAlignment="Left" Click="Btn_StartCapture_Click" IsEnabled="False"/>
+                <Button Content="Stop capture" Name="Btn_StopCapture" Width="175" HorizontalAlignment="Right" Click="Btn_StopCapture_Click" IsEnabled="False"/>
+            </StackPanel>
+            
+        </StackPanel>
+
+        <!-- Conteneur pour le rendu SFML -->
+        <WindowsFormsHost Grid.Column="1" x:Name="SfmlHost" />
+
+    </Grid>
+</Window>
