@@ -7,7 +7,7 @@ using System.Diagnostics;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
 
-namespace WpfSoundMonitor
+namespace WpfSoundMonitor.Core
 {
     /// <summary>
     /// Implements tools to analyze the sound captured by a WasapiRecorder
@@ -105,10 +105,6 @@ namespace WpfSoundMonitor
                 SampleAverageMaxValue_Value = 0.0f;
                 SampleAverageMaxValue_Count = 0.0f;
 
-                if(sampleAverage >= Config.MAIN_W_START_THRESHOLD)
-                {
-
-                }
 
             }
         }

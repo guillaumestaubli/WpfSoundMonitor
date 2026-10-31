@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
+using System.Linq;
 
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
-using System.Linq;
 
-namespace WpfSoundMonitor
+namespace WpfSoundMonitor.Core
 {
     /// <summary>
     /// Give a variety of tools to interact easily with the capture devices of the computer

@@ -7,7 +7,7 @@ using SFML.System;
 using SFML.Graphics;
 using System.Linq;
 
-namespace WpfSoundMonitor
+namespace WpfSoundMonitor.Core
 {
     /// <summary>
     /// Implement tools to trace the sound wave captured by a capture device
