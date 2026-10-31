@@ -32,31 +32,16 @@
 
             <StackPanel Orientation="Horizontal">
 
-                <TextBlock Text="Sample duration [ms] : " 
+                <TextBlock Text="Sample buffer duration [ms] : " 
                            Width="175" 
                            Margin="5,0,0,5"/>
 
                 <TextBox Name="TxtBox_SampleDurationMs" 
                          Width="165" 
                          Margin="0,0,5,5"
-                         PreviewTextInput="TxtBox_Number_Integer_NumberValidation" 
+                         PreviewTextInput="TxtBox_Validation_Number_Integer" 
                          Text="100"/>
             </StackPanel>
-
-            <StackPanel Orientation="Horizontal">
-
-                <TextBlock Text="Duration for the average [ms] : " 
-                           Width="175" 
-                           Margin="5,0,0,5"/>
-
-                <TextBox Name="TxtBox_DurationAverageMs" 
-                         Width="165" 
-                         Margin="0,0,5,5"
-                         PreviewTextInput="TxtBox_Number_Integer_NumberValidation" 
-                         Text="5000"/>
-
-            </StackPanel>
-
 
             <StackPanel Orientation="Horizontal">
 
@@ -75,6 +60,52 @@
                         HorizontalAlignment="Right" 
                         Click="Btn_StopCapture_Click" 
                         IsEnabled="False" />
+
+            </StackPanel>
+
+            <TextBlock Text="Too much noise analyzer settings :"
+                       FontWeight="Bold" 
+                       Margin="5,5,5,5"/>
+
+            <StackPanel Orientation="Horizontal">
+
+                <TextBlock Text="Start Threshold : " 
+                           Width="175" 
+                           Margin="5,0,0,5"/>
+
+                <TextBox Name="TxtBox_StartThreshold" 
+                         Width="165" 
+                         Margin="0,0,5,5"
+                         PreviewTextInput="TxtBox_Validation_Number_Decimal" 
+                         Text="0.5"/>
+
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+
+                <TextBlock Text="Analyze duration [ms] : " 
+                           Width="175" 
+                           Margin="5,0,0,5"/>
+
+                <TextBox Name="TxtBox_AnalyzeDuration" 
+                         Width="165" 
+                         Margin="0,0,5,5"
+                         PreviewTextInput="TxtBox_Validation_Number_Integer" 
+                         Text="5000"/>
+
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+
+                <TextBlock Text="Max average value : " 
+                           Width="175" 
+                           Margin="5,0,0,5"/>
+
+                <TextBox Name="TxtBox_MaxAverageValue" 
+                         Width="165" 
+                         Margin="0,0,5,5"
+                         PreviewTextInput="TxtBox_Validation_Number_Decimal" 
+                         Text="1.000"/>
 
             </StackPanel>
 
@@ -112,7 +143,6 @@
                 <TextBox Name="TxtBox_SamplesCount" 
                          Width="165" 
                          Margin="0,0,5,5"
-                         Text=""
                          IsEnabled="False"/>
 
             </StackPanel>
@@ -126,7 +156,6 @@
                 <TextBox Name="TxtBox_CurrentSampleValue" 
                          Width="165" 
                          Margin="0,0,5,5"
-                         Text=""
                          IsEnabled="False"/>
 
             </StackPanel>
@@ -140,7 +169,6 @@
                 <TextBox Name="TxtBox_SamplesMaxValue" 
                          Width="165" 
                          Margin="0,0,5,5"
-                         Text=""
                          IsEnabled="False"/>    
 
             </StackPanel>
@@ -154,7 +182,6 @@
                 <TextBox Name="TxtBox_SamplesAvgValue" 
                          Width="165" 
                          Margin="0,0,5,5"
-                         Text=""
                          IsEnabled="False"/>
 
             </StackPanel>

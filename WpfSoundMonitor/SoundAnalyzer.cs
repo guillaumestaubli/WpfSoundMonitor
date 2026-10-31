@@ -17,7 +17,6 @@ namespace WpfSoundMonitor
         public static bool IsCapturing { get; private set; } = false;
         public static WasapiRecorder? CaptureDevice { get; private set; } = null;
         public static float SampleDurationMs { get; set; } = 0.0f;
-        public static float DurationAverageMs { get; set; } = 0.0f;
         public static List<float> SamplesAverageMaxValues { get; private set; } = new List<float>();
 
         private static float SampleAverageMaxValue_Count = 0.0f;
@@ -32,10 +31,9 @@ namespace WpfSoundMonitor
         /// </summary>
         /// <param name="sampleDurationMs"></param>
         /// <param name="durationAverageMs"></param>
-        public static void Init(WasapiRecorder captureDevice, float sampleDurationMs, float durationAverageMs)
+        public static void Init(WasapiRecorder captureDevice, float sampleDurationMs)
         {
             SampleDurationMs = sampleDurationMs;
-            DurationAverageMs = durationAverageMs;
             SamplesAverageMaxValues.Clear();
             _clock_sample = new Stopwatch();
             _clock_average = new Stopwatch();
@@ -95,6 +93,8 @@ namespace WpfSoundMonitor
             // calculate the average value of the sample
             if (_clock_sample.ElapsedMilliseconds >= SampleDurationMs)
             {
+                _clock_sample.Restart();
+
                 float sampleAverage = 0.0f;
 
                 if (SampleAverageMaxValue_Count != 0)
@@ -105,7 +105,11 @@ namespace WpfSoundMonitor
                 SampleAverageMaxValue_Value = 0.0f;
                 SampleAverageMaxValue_Count = 0.0f;
 
-                _clock_sample.Restart();
+                if(sampleAverage >= Config.MAIN_W_START_THRESHOLD)
+                {
+
+                }
+
             }
         }
     }

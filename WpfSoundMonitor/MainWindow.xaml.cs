@@ -18,6 +18,7 @@ using SFML.System;
 using System;
 using System.Diagnostics;
 using System.Windows.Controls.Primitives;
+using System.Globalization;
 
 namespace WpfSoundMonitor
 {
@@ -119,7 +120,7 @@ namespace WpfSoundMonitor
                 // Draw the sound wave and other components of the graph in the SFML render area
                 IDrawable[] drawables = SoundWaveTracer.GetDrawables(_sfmlView);
 
-                for(int i = 0; i < drawables.Length; ++i)
+                for (int i = 0; i < drawables.Length; ++i)
                 {
                     _sfmlWindow.Draw(drawables[i]);
                 }
@@ -157,7 +158,7 @@ namespace WpfSoundMonitor
 
             ListBox lstBox = (ListBox)sender;
 
-            if(lstBox.SelectedItem == null || lstBox.SelectedItem is not ListBoxItem)
+            if (lstBox.SelectedItem == null || lstBox.SelectedItem is not ListBoxItem)
             {
                 string message =
                     $"An error occured at {nameof(MainWindow)}.{nameof(Lstbox_CaptureDevices_SelectionChanged)} " +
@@ -187,40 +188,6 @@ namespace WpfSoundMonitor
         /// <param name="e"></param>
         private void Btn_StartCapture_Click(object sender, RoutedEventArgs e)
         {
-            Btn_StartCapture.IsEnabled = false;
-            Btn_StopCapture.IsEnabled = true;
-            TxtBox_SampleDurationMs.IsEnabled = false;
-            TxtBox_DurationAverageMs.IsEnabled = false;
-
-            float sampleDurationMs = 0.0f;
-            float durationAverageMs = 0.0f;
-
-            if (!float.TryParse(TxtBox_SampleDurationMs.Text, out sampleDurationMs))
-            {
-                string message =
-                    $"Failed to parse {TxtBox_SampleDurationMs.Text} from {nameof(TxtBox_SampleDurationMs)} as float " +
-                    $"at {nameof(MainWindow)}.{nameof(Btn_StartCapture_Click)}";
-
-                string caption = $"WpfSoundMonitor - ERROR";
-
-                MessageBox.Show(message, caption, MessageBoxButton.OK, MessageBoxImage.Error);
-
-                return;
-            }
-
-            if (!float.TryParse(TxtBox_DurationAverageMs.Text, out durationAverageMs))
-            {
-                string message =
-                    $"Failed to parse {TxtBox_DurationAverageMs.Text} from {nameof(TxtBox_DurationAverageMs)} as float " +
-                    $"at {nameof(MainWindow)}.{nameof(Btn_StartCapture_Click)}";
-
-                string caption = $"WpfSoundMonitor - ERROR";
-
-                MessageBox.Show(message, caption, MessageBoxButton.OK, MessageBoxImage.Error);
-
-                return;
-            }
-
             if (CaptureDeviceManager.CurrentWasapiRecorder == null)
             {
                 string message =
@@ -234,10 +201,71 @@ namespace WpfSoundMonitor
                 return;
             }
 
-            SoundAnalyzer.Init(CaptureDeviceManager.CurrentWasapiRecorder, sampleDurationMs, durationAverageMs);
+            // Fetch the datas from the user input and check if any errors occured during the process
+            if (!StartCapture_LoadUserInputValues())
+            {
+                string message =
+                    $"An error occured during {nameof(MainWindow)}.{nameof(StartCapture_LoadUserInputValues)}. " +
+                    $"Impossible to load user inputs";
+
+                string caption = $"WpfSoundMonitor - ERROR";
+
+                MessageBox.Show(message, caption, MessageBoxButton.OK, MessageBoxImage.Error);
+
+                return;
+            }
+
+            Btn_StartCapture.IsEnabled = false;
+            Btn_StopCapture.IsEnabled = true;
+            TxtBox_SampleDurationMs.IsEnabled = false;
+            TxtBox_StartThreshold.IsEnabled = false;
+            TxtBox_AnalyzeDuration.IsEnabled = false;
+            TxtBox_MaxAverageValue.IsEnabled = false;
+
+            SoundAnalyzer.Init(CaptureDeviceManager.CurrentWasapiRecorder, Config.MAIN_W_SAMPLE_BUFFER_DURATION_MS);
             SoundWaveTracer.Init();
 
             SoundAnalyzer.Start();
+        }
+
+        private bool StartCapture_LoadUserInputValues()
+        {
+            bool success = true;
+
+            int sampleBufferDurationMs = 0;
+            float startThreshold = 0.0f;
+            int analyzeDurationMs = 0;
+            float maxAverageValue = 0.0f;
+
+            if (!int.TryParse(TxtBox_SampleDurationMs.Text, CultureInfo.InvariantCulture, out sampleBufferDurationMs))
+            {
+                success = false;
+            }
+
+            if (!float.TryParse(TxtBox_StartThreshold.Text, CultureInfo.InvariantCulture, out startThreshold))
+            {
+                success = false;
+            }
+
+            if (!int.TryParse(TxtBox_AnalyzeDuration.Text, CultureInfo.InvariantCulture, out analyzeDurationMs))
+            {
+                success = false;
+            }
+
+            if (!float.TryParse(TxtBox_MaxAverageValue.Text, CultureInfo.InvariantCulture, out maxAverageValue))
+            {
+                success = false;
+            }
+
+            if (success)
+            {
+                Config.MAIN_W_SAMPLE_BUFFER_DURATION_MS = sampleBufferDurationMs;
+                Config.MAIN_W_START_THRESHOLD = startThreshold;
+                Config.MAIN_W_ANALYZE_DURATION_MS = analyzeDurationMs;
+                Config.MAIN_W_MAX_AVERAGE_VALUE = maxAverageValue;
+            }
+
+            return success;
         }
 
         /// <summary>
@@ -250,23 +278,47 @@ namespace WpfSoundMonitor
             Btn_StartCapture.IsEnabled = true;
             Btn_StopCapture.IsEnabled = false;
             TxtBox_SampleDurationMs.IsEnabled = true;
-            TxtBox_DurationAverageMs.IsEnabled = true;
+            TxtBox_StartThreshold.IsEnabled = true;
+            TxtBox_AnalyzeDuration.IsEnabled = true;
+            TxtBox_MaxAverageValue.IsEnabled = true;
 
             SoundAnalyzer.Stop();
         }
 
         /// <summary>
-        /// Control the user input for the mandatory number input in textbox
+        /// Verrify the user input for integer numbers
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void TxtBox_Number_Integer_NumberValidation(object? sender, TextCompositionEventArgs e)
+        public void TxtBox_Validation_Number_Integer(object? sender, TextCompositionEventArgs e)
         {
             string regex_pattern = @"^[\d]*$";
 
             Regex regex = new Regex(regex_pattern, RegexOptions.None);
 
             e.Handled = !regex.IsMatch(e.Text);
+        }
+
+        /// <summary>
+        /// Verrify the user input for decimal numbers
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void TxtBox_Validation_Number_Decimal(object? sender, TextCompositionEventArgs e)
+        {
+            if (sender == null || sender is not TextBox)
+            {
+                e.Handled = false;
+                return;
+            }
+
+            string regex_pattern = @"^[0-9]*[.,]?[0-9]*$";
+
+            Regex regex = new Regex(regex_pattern, RegexOptions.None);
+
+            string fullInput = ((TextBox)sender) + e.Text;
+
+            e.Handled = !regex.IsMatch(fullInput);
         }
 
         /// <summary>
@@ -291,8 +343,6 @@ namespace WpfSoundMonitor
             _sfmlView.Move(offset);
             _sfmlWindow.SetView(_sfmlView);
             _sfmlViewPosition += offset;
-
-
         }
 
         #endregion
