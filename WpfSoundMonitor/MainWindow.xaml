@@ -12,35 +12,154 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- UI WPF Standard -->
-        <StackPanel Grid.Column="0" Background="#F0F0F0">
-            <TextBlock Text="Capture Devices :" FontWeight="Bold" Margin="5,5,5,5"/>
-            <Button Content="Refresh capture devices" Name="Btn_RefreshCaptureDevices" Click="Btn_RefreshCaptureDevices_Click" Margin="5,0,5,5"/>
-            <ListBox Name="Lstbox_CaptureDevices" Height="100" Margin="5,0,5,5" SelectionChanged="Lstbox_CaptureDevices_SelectionChanged" d:ItemsSource="{d:SampleData ItemCount=5}"/>
+        <!-- First column (left) -->
+        <StackPanel Grid.Column="0">
+
+            <TextBlock Text="Capture Devices :" 
+                       FontWeight="Bold" 
+                       Margin="5,5,5,5"/>
+
+            <Button Name="Btn_RefreshCaptureDevices" 
+                    Content="Refresh capture devices"
+                    Click="Btn_RefreshCaptureDevices_Click" 
+                    Margin="5,0,5,5"/>
+
+            <ListBox Name="Lstbox_CaptureDevices" 
+                     Height="100" 
+                     Margin="5,0,5,5" 
+                     SelectionChanged="Lstbox_CaptureDevices_SelectionChanged" 
+                     d:ItemsSource="{d:SampleData ItemCount=5}"/>
 
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Sample duration [ms] : " Width="175" Margin="5,0,0,5"/>
-                <TextBox Name="TxtBox_SampleDurationMs" Width="165" PreviewTextInput="TxtBox_Number_Integer_NumberValidation" Text="100" Margin="0,0,5,5"/>
+
+                <TextBlock Text="Sample duration [ms] : " 
+                           Width="175" 
+                           Margin="5,0,0,5"/>
+
+                <TextBox Name="TxtBox_SampleDurationMs" 
+                         Width="165" 
+                         Margin="0,0,5,5"
+                         PreviewTextInput="TxtBox_Number_Integer_NumberValidation" 
+                         Text="100"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Duration for the average [ms] : " Width="175" Margin="5,0,0,5"/>
-                <TextBox Name="TxtBox_DurationAverageMs" Width="165" PreviewTextInput="TxtBox_Number_Integer_NumberValidation" Text="5000" Margin="0,0,5,5"/>
+
+                <TextBlock Text="Duration for the average [ms] : " 
+                           Width="175" 
+                           Margin="5,0,0,5"/>
+
+                <TextBox Name="TxtBox_DurationAverageMs" 
+                         Width="165" 
+                         Margin="0,0,5,5"
+                         PreviewTextInput="TxtBox_Number_Integer_NumberValidation" 
+                         Text="5000"/>
+
             </StackPanel>
 
+
             <StackPanel Orientation="Horizontal">
-                <Button Content="Start capture" Name="Btn_StartCapture" Width="165" HorizontalAlignment="Left" Click="Btn_StartCapture_Click" IsEnabled="False" Margin="5,0,5,5"/>
-                <Button Content="Stop capture" Name="Btn_StopCapture" Width="165" HorizontalAlignment="Right" Click="Btn_StopCapture_Click" IsEnabled="False" Margin="5,0,5,5"/>
+
+                <Button Name="Btn_StartCapture" 
+                        Content="Start capture"  
+                        Width="165" 
+                        Margin="5,0,5,5"
+                        HorizontalAlignment="Left" 
+                        Click="Btn_StartCapture_Click" 
+                        IsEnabled="False" />
+
+                <Button Name="Btn_StopCapture" 
+                        Content="Stop capture"  
+                        Width="165" 
+                        Margin="5,0,5,5"
+                        HorizontalAlignment="Right" 
+                        Click="Btn_StopCapture_Click" 
+                        IsEnabled="False" />
+
             </StackPanel>
 
         </StackPanel>
 
-        <StackPanel Grid.Column="1" Background="#F0F0F0">
-            <TextBlock Text="Wave render :" FontWeight="Bold"  Margin="5,5,5,5"/>
+        <!-- Second column (right) -->
+        <StackPanel Grid.Column="1">
+
+            <TextBlock Text="Wave render :" 
+                       FontWeight="Bold"  
+                       Margin="5,5,5,5"/>
+
             <!-- Container for SFML -->
-            <WindowsFormsHost Grid.Column="1" x:Name="SfmlHost" Height="200" VerticalAlignment="Top"  Margin="5,0,5,5"/>
-            <ScrollBar Name="ScrollBarSfmlRenderArea" Width="440" Margin="5,0,5,5" Orientation="Horizontal" Minimum="0" Maximum="100" ValueChanged="ScrollBarSfmlRenderArea_ValueChanged"/>
+            <WindowsFormsHost x:Name="SfmlHost" 
+                              Grid.Column="1"  
+                              Height="200" 
+                              VerticalAlignment="Top"  
+                              Margin="5,0,5,5"/>
+
+            <ScrollBar 
+                Name="ScrollBarSfmlRenderArea" 
+                Width="440" 
+                Margin="5,0,5,5" 
+                Orientation="Horizontal" 
+                Minimum="0" 
+                Maximum="100" 
+                ValueChanged="ScrollBarSfmlRenderArea_ValueChanged"/>
+
+            <StackPanel Orientation="Horizontal">
+
+                <TextBlock Text="Samples count : "
+                           Margin ="5,0,5,5"
+                           Width="150"/>
+
+                <TextBox Name="TxtBox_SamplesCount" 
+                         Width="165" 
+                         Margin="0,0,5,5"
+                         Text=""
+                         IsEnabled="False"/>
+
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+
+                <TextBlock Text="Current value : "
+                           Margin ="5,0,5,5"
+                           Width="150"/>
+
+                <TextBox Name="TxtBox_CurrentSampleValue" 
+                         Width="165" 
+                         Margin="0,0,5,5"
+                         Text=""
+                         IsEnabled="False"/>
+
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+
+                <TextBlock Text="Samples max value : "
+                           Margin ="5,0,5,5"
+                           Width="150"/>
+
+                <TextBox Name="TxtBox_SamplesMaxValue" 
+                         Width="165" 
+                         Margin="0,0,5,5"
+                         Text=""
+                         IsEnabled="False"/>    
+
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+
+                <TextBlock Text="Samples average value : "
+                           Margin ="5,0,5,5"
+                           Width="150"/>
+
+                <TextBox Name="TxtBox_SamplesAvgValue" 
+                         Width="165" 
+                         Margin="0,0,5,5"
+                         Text=""
+                         IsEnabled="False"/>
+
+            </StackPanel>
+
         </StackPanel>
-        
+
     </Grid>
 </Window>

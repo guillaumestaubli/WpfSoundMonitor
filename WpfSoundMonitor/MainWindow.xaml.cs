@@ -17,6 +17,7 @@ using SFML.Window;
 using SFML.System;
 using System;
 using System.Diagnostics;
+using System.Windows.Controls.Primitives;
 
 namespace WpfSoundMonitor
 {
@@ -25,8 +26,11 @@ namespace WpfSoundMonitor
     /// </summary>
     public partial class MainWindow : System.Windows.Window
     {
-        private RenderWindow SfmlWindow;
-        private System.Windows.Forms.Control WPF_SFML_Surface;
+        private View _sfmlView;
+        private Vector2f _sfmlViewPosition = new Vector2f(0.0f, 0.0f);
+        private Vector2f _sfmlViewSize = new Vector2f(0.0f, 0.0f);
+        private RenderWindow _sfmlWindow;
+        private System.Windows.Forms.Control _wpfSfmlSurface;
 
         /// <summary>
         /// Default constructor
@@ -36,11 +40,12 @@ namespace WpfSoundMonitor
             InitializeComponent();
 
             // Create WIN32 surface in winforms for integration in WPF
-            WPF_SFML_Surface = new System.Windows.Forms.Control();
-            SfmlHost.Child = WPF_SFML_Surface;
+            _wpfSfmlSurface = new System.Windows.Forms.Control();
+            SfmlHost.Child = _wpfSfmlSurface;
 
             // Init SFML window for graphic rendering
-            SfmlWindow = new RenderWindow(WPF_SFML_Surface.Handle);
+            _sfmlWindow = new RenderWindow(_wpfSfmlSurface.Handle);
+            _sfmlView = new View();
 
             // add the handler for the loaded event of the WPF window
             this.Loaded += MainWindow_Loaded;
@@ -49,7 +54,7 @@ namespace WpfSoundMonitor
             CompositionTarget.Rendering += OnCompositionRendering;
 
             // event for managing the resize of the SFML render area in the WPF container
-            WPF_SFML_Surface.Resize += WPF_SFML_Surface_Resized;
+            _wpfSfmlSurface.Resize += WPF_SFML_Surface_Resized;
         }
 
         #region EVENTS
@@ -73,16 +78,17 @@ namespace WpfSoundMonitor
         /// <param name="e"></param>
         private void WPF_SFML_Surface_Resized(object? sender, EventArgs e)
         {
-            SfmlWindow.Size = new Vector2u((uint)WPF_SFML_Surface.Width, (uint)WPF_SFML_Surface.Height);
+            _sfmlWindow.Size = new Vector2u((uint)_wpfSfmlSurface.Width, (uint)_wpfSfmlSurface.Height);
 
-            Vector2f position = new Vector2f(0, 0);
-            Vector2f size = new Vector2f(WPF_SFML_Surface.Width, WPF_SFML_Surface.Height);
+            _sfmlViewPosition = new Vector2f(0, 0);
+            _sfmlViewSize = new Vector2f(_wpfSfmlSurface.Width, _wpfSfmlSurface.Height);
 
-            View view = new View(new FloatRect(position, size));
+            _sfmlView = new View(new FloatRect(_sfmlViewPosition, _sfmlViewSize));
 
-            SfmlWindow.SetView(view);
+            _sfmlWindow.SetView(_sfmlView);
 
-            ScrollBarSfmlRenderArea.Width = WPF_SFML_Surface.Width;
+            // adjust scroll bar width to accomodate the new windows width
+            ScrollBarSfmlRenderArea.Width = _wpfSfmlSurface.Width;
         }
 
         /// <summary>
@@ -93,19 +99,32 @@ namespace WpfSoundMonitor
         private void OnCompositionRendering(object? sender, EventArgs e)
         {
             if (SoundAnalyzer.IsCapturing)
-                SoundWaveTracer.TraceSoundWave(SoundAnalyzer.SamplesAverageMaxValues.ToArray());
-
-            if (SfmlWindow != null)
             {
-                SfmlWindow.DispatchEvents();
+                SoundWaveTracer.TraceSoundWave(SoundAnalyzer.SamplesAverageMaxValues.ToArray());
+                UpdateSfmlRenderAreaScrollbarMinMaxValues(SoundAnalyzer.SamplesAverageMaxValues.Count);
+                SfmlRenderArea_ScrollToEnd();
 
-                SfmlWindow.Clear(new SFML.Graphics.Color(30, 30, 30));
+                TxtBox_SamplesCount.Text = SoundWaveTracer.SamplesCount.ToString();
+                TxtBox_CurrentSampleValue.Text = SoundWaveTracer.SamplesCurrentValue.ToString();
+                TxtBox_SamplesMaxValue.Text = SoundWaveTracer.SamplesMaxValue.ToString();
+                TxtBox_SamplesAvgValue.Text = SoundWaveTracer.SamplesCurrentAvgValue.ToString();
+            }
 
-                // TODO : Draw graph representing sound captured by current capture device
-                if (SoundWaveTracer.DrawableSoundWave != null)
-                    SfmlWindow.Draw(SoundWaveTracer.DrawableSoundWave);
+            if (_sfmlWindow != null)
+            {
+                _sfmlWindow.DispatchEvents();
 
-                SfmlWindow.Display();
+                _sfmlWindow.Clear(new SFML.Graphics.Color(30, 30, 30));
+
+                // Draw the sound wave and other components of the graph in the SFML render area
+                IDrawable[] drawables = SoundWaveTracer.GetDrawables(_sfmlView);
+
+                for(int i = 0; i < drawables.Length; ++i)
+                {
+                    _sfmlWindow.Draw(drawables[i]);
+                }
+
+                _sfmlWindow.Display();
             }
         }
 
@@ -137,6 +156,19 @@ namespace WpfSoundMonitor
             }
 
             ListBox lstBox = (ListBox)sender;
+
+            if(lstBox.SelectedItem == null || lstBox.SelectedItem is not ListBoxItem)
+            {
+                string message =
+                    $"An error occured at {nameof(MainWindow)}.{nameof(Lstbox_CaptureDevices_SelectionChanged)} " +
+                    $"when trying to fetch capture device from listbox selection";
+
+                string caption = $"WpfSoundMonitor - ERROR";
+
+                MessageBox.Show(message, caption, MessageBoxButton.OK, MessageBoxImage.Error);
+
+                return;
+            }
 
             ListBoxItem itemSelected = (ListBoxItem)lstBox.SelectedItem;
 
@@ -237,8 +269,29 @@ namespace WpfSoundMonitor
             e.Handled = !regex.IsMatch(e.Text);
         }
 
-        private void ScrollBarSfmlRenderArea_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        /// <summary>
+        /// Handle the scroll event on the scrollbar for the sfml render area
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ScrollBarSfmlRenderArea_ValueChanged(object? sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            if (sender == null || sender is not ScrollBar)
+                return;
+
+            ScrollBar scrollBar = (ScrollBar)sender;
+
+            float scrollValue_x = (float)scrollBar.Value;
+
+            Vector2f sfmlViewOldPosition = _sfmlViewPosition;
+            Vector2f sfmlViewNewPosition = new Vector2f(scrollValue_x, 0.0f);
+
+            Vector2f offset = sfmlViewNewPosition - sfmlViewOldPosition;
+
+            _sfmlView.Move(offset);
+            _sfmlWindow.SetView(_sfmlView);
+            _sfmlViewPosition += offset;
+
 
         }
 
@@ -269,6 +322,33 @@ namespace WpfSoundMonitor
             Lstbox_CaptureDevices.Items.Clear();
         }
 
-        
+        /// <summary>
+        /// Update the scroll bar values depending on the number of sound samples captured.
+        /// This makes the user capable of scrolling horizontally to view all the soundwave generated
+        /// </summary>
+        /// <param name="nbSamples">Number of samples captured</param>
+        private void UpdateSfmlRenderAreaScrollbarMinMaxValues(int nbSamples)
+        {
+            float x_max = nbSamples * Config.SOUND_WAVE_DRAW_POINT_X_SPACING;
+
+            if (x_max <= _sfmlWindow.Size.X)
+            {
+                ScrollBarSfmlRenderArea.Minimum = 0;
+                ScrollBarSfmlRenderArea.Maximum = 0;
+            }
+            else
+            {
+                ScrollBarSfmlRenderArea.Minimum = 0;
+                ScrollBarSfmlRenderArea.Maximum = x_max - _wpfSfmlSurface.Width;
+            }
+        }
+
+        /// <summary>
+        /// Manually scroll to the end of the graph (used when new datas are displayed on the sfml render area)
+        /// </summary>
+        private void SfmlRenderArea_ScrollToEnd()
+        {
+            ScrollBarSfmlRenderArea.Value = ScrollBarSfmlRenderArea.Maximum;
+        }
     }
 }

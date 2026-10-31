@@ -9,6 +9,9 @@ using NAudio.Wave;
 
 namespace WpfSoundMonitor
 {
+    /// <summary>
+    /// Implements tools to analyze the sound captured by a WasapiRecorder
+    /// </summary>
     public static class SoundAnalyzer
     {
         public static bool IsCapturing { get; private set; } = false;
@@ -89,6 +92,7 @@ namespace WpfSoundMonitor
                 ++SampleAverageMaxValue_Count;
             }
 
+            // calculate the average value of the sample
             if (_clock_sample.ElapsedMilliseconds >= SampleDurationMs)
             {
                 float sampleAverage = 0.0f;
@@ -103,20 +107,6 @@ namespace WpfSoundMonitor
 
                 _clock_sample.Restart();
             }
-        }
-
-        public static string Debug_SamplesAverageMaxValuesToString()
-        {
-            string str = "[";
-
-            int count = SamplesAverageMaxValues.Count;
-
-            for (int i = 0; i < count; ++i)
-                str += $"{SamplesAverageMaxValues[i]}, ";
-
-            str += "]";
-
-            return str;
         }
     }
 }
