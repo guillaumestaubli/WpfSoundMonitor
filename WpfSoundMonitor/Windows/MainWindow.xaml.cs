@@ -95,7 +95,8 @@ namespace WpfSoundMonitor.Windows
         {
             if (SoundAnalyzer.IsCapturing)
             {
-                SoundWaveTracer.TraceSoundWave(SoundAnalyzer.SamplesAverageMaxValues.ToArray());
+                SoundWaveTracer.GenerateRender(SoundAnalyzer.SamplesAverageMaxValues.ToArray(), SoundAnalyzer.ThresholdSamples.ToArray());
+
                 UpdateSfmlRenderAreaScrollbarMinMaxValues(SoundAnalyzer.SamplesAverageMaxValues.Count);
                 SfmlRenderArea_ScrollToEnd();
 
@@ -112,7 +113,7 @@ namespace WpfSoundMonitor.Windows
                 _sfmlWindow.Clear(new SFML.Graphics.Color(30, 30, 30));
 
                 // Draw the sound wave and other components of the graph in the SFML render area
-                IDrawable[] drawables = SoundWaveTracer.GetDrawables(_sfmlView);
+                IDrawable[] drawables = SoundWaveTracer.GetDrawables();
 
                 for (int i = 0; i < drawables.Length; ++i)
                 {
@@ -286,11 +287,25 @@ namespace WpfSoundMonitor.Windows
         /// <param name="e"></param>
         public void TxtBox_Validation_Number_Integer(object? sender, TextCompositionEventArgs e)
         {
-            string regex_pattern = @"^[\d]*$";
+            if (sender == null || sender is not TextBox)
+            {
+                e.Handled = false;
+                return;
+            }
 
-            Regex regex = new Regex(regex_pattern, RegexOptions.None);
+            string fullInput = ((TextBox)sender).Text + e.Text;
 
-            e.Handled = !regex.IsMatch(e.Text);
+            if (fullInput.Length == 0)
+                fullInput = "0";
+
+            int outVal = 0;
+
+            bool success = int.TryParse(fullInput, CultureInfo.InvariantCulture, out outVal);
+
+            e.Handled = !success;
+
+            // e.Handled = false; => write new char
+            // e.Handled = true;  => don't write new char
         }
 
         /// <summary>
@@ -306,13 +321,22 @@ namespace WpfSoundMonitor.Windows
                 return;
             }
 
-            string regex_pattern = @"^[0-9]*[.,]?[0-9]*$";
+            string fullInput = ((TextBox)sender).Text + e.Text;
 
-            Regex regex = new Regex(regex_pattern, RegexOptions.None);
+            if (fullInput.Length == 0)
+                fullInput = "0";
 
-            string fullInput = ((TextBox)sender) + e.Text;
+            if (fullInput.EndsWith('.'))
+                fullInput += "0";
 
-            e.Handled = !regex.IsMatch(fullInput);
+            float outVal = 0.0f;
+
+            bool success = float.TryParse(fullInput, CultureInfo.InvariantCulture, out outVal);
+
+            e.Handled = !success;
+
+            // e.Handled = false; => write new char
+            // e.Handled = true;  => don't write new char
         }
 
         /// <summary>

@@ -16,14 +16,17 @@ namespace WpfSoundMonitor.Core
     {
         public static bool IsCapturing { get; private set; } = false;
         public static WasapiRecorder? CaptureDevice { get; private set; } = null;
-        public static float SampleDurationMs { get; set; } = 0.0f;
+        public static float SampleDurationMs { get; private set; } = 0.0f;
         public static List<float> SamplesAverageMaxValues { get; private set; } = new List<float>();
+        public static List<AdvancedSample> ThresholdSamples { get; private set; } = new List<AdvancedSample>();
+        private static AdvancedSample? _currentThresholdSample = null;
 
-        private static float SampleAverageMaxValue_Count = 0.0f;
-        private static float SampleAverageMaxValue_Value = 0.0f;
+        private static int _sampleAverageMaxValue_Count = 0;
+        private static float _sampleAverageMaxValue_Value = 0.0f;
 
         private static Stopwatch _clock_sample = new Stopwatch();
         private static Stopwatch _clock_average = new Stopwatch();
+
 
         /// <summary>
         /// Initialization point for the node
@@ -42,7 +45,7 @@ namespace WpfSoundMonitor.Core
         }
 
         /// <summary>
-        /// Start capture of the sound and analyze it
+        /// Start capturing the datastream coming from the selected capture device
         /// </summary>
         /// <exception cref="Exception"></exception>
         public static void Start()
@@ -56,6 +59,10 @@ namespace WpfSoundMonitor.Core
             _clock_average.Start();
         }
 
+        /// <summary>
+        /// Stop capturing the datastream coming from the selected capture device
+        /// </summary>
+        /// <exception cref="Exception"></exception>
         public static void Stop()
         {
             if (CaptureDevice == null)
@@ -86,8 +93,8 @@ namespace WpfSoundMonitor.Core
                 if (abs > bufferMaxValue)
                     bufferMaxValue = abs;
 
-                SampleAverageMaxValue_Value += bufferMaxValue;
-                ++SampleAverageMaxValue_Count;
+                _sampleAverageMaxValue_Value += bufferMaxValue;
+                ++_sampleAverageMaxValue_Count;
             }
 
             // calculate the average value of the sample
@@ -97,15 +104,39 @@ namespace WpfSoundMonitor.Core
 
                 float sampleAverage = 0.0f;
 
-                if (SampleAverageMaxValue_Count != 0)
-                    sampleAverage = SampleAverageMaxValue_Value / SampleAverageMaxValue_Count;
+                if (_sampleAverageMaxValue_Count != 0)
+                    sampleAverage = _sampleAverageMaxValue_Value / _sampleAverageMaxValue_Count;
 
                 SamplesAverageMaxValues.Add(sampleAverage);
 
-                SampleAverageMaxValue_Value = 0.0f;
-                SampleAverageMaxValue_Count = 0.0f;
+                if(_currentThresholdSample == null && sampleAverage >= Config.MAIN_W_START_THRESHOLD)
+                {
+                    _clock_average.Start();
+                    _currentThresholdSample = AdvancedSample.OpenSample(SamplesAverageMaxValues.Count - 1, sampleAverage);
+                    ThresholdSamples.Add(_currentThresholdSample);
+                }
+                else if(_currentThresholdSample != null)
+                {
+                    if(_clock_average.ElapsedMilliseconds < Config.MAIN_W_ANALYZE_DURATION_MS)
+                    {
+                        _currentThresholdSample.AppendValue(sampleAverage);
 
+                        ThresholdSamples[ThresholdSamples.Count - 1] = _currentThresholdSample;
+                    }
+                    else // _clock_average.ElapsedMilliseconds >= Config.MAIN_W_ANALYZE_DURATION_MS
+                    {
+                        _currentThresholdSample.Close(SamplesAverageMaxValues.Count - 1, sampleAverage);
 
+                        ThresholdSamples[ThresholdSamples.Count - 1] = _currentThresholdSample;
+
+                        _currentThresholdSample = null;
+
+                        _clock_average.Reset();
+                    }
+                }
+
+                _sampleAverageMaxValue_Value = 0.0f;
+                _sampleAverageMaxValue_Count = 0;
             }
         }
     }

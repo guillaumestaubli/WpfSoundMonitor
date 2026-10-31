@@ -12,13 +12,16 @@ namespace WpfSoundMonitor
         public const int BASE_MAIN_W_ANALYZE_DURATION_MS = 5000;
         public const float BASE_MAIN_W_MAX_AVERAGE_VALUE = 1.0f;
 
-        
+        // References values for the SFML render area
         public const float SOUND_WAVE_DRAW_POINT_X_SPACING = 5.0f;
         public const float SFML_RENDER_AREA_HEIGHT_PX = 200.0f;
         public const float SFML_RENDER_AREA_PADDING_PX = 5.0f;
+        public static readonly SFML.Graphics.Color COLOR_SOUND_WAVE_DATASTREAM = new SFML.Graphics.Color(0, 255, 0);
+        public static readonly SFML.Graphics.Color COLOR_AVG_WAVE_DATASTREAM = new SFML.Graphics.Color(0, 255, 255);
+        public static readonly SFML.Graphics.Color COLOR_SAMPLE_BACKGROUND = new SFML.Graphics.Color(255, 255, 0, 35);
+        public static readonly SFML.Graphics.Color COLOR_SAMPLE_AVG_WAVE = new SFML.Graphics.Color(255, 0, 0);
 
-
-
+        // MainWindow user inputs values
         public static int MAIN_W_SAMPLE_BUFFER_DURATION_MS { get; set; } = BASE_MAIN_W_SAMPLE_BUFFER_DURATION_MS;
         public static float MAIN_W_START_THRESHOLD { get; set; } = BASE_MAIN_W_START_THRESHOLD;
         public static int MAIN_W_ANALYZE_DURATION_MS { get; set; } = BASE_MAIN_W_ANALYZE_DURATION_MS;
