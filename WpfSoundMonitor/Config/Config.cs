@@ -20,6 +20,7 @@ namespace WpfSoundMonitor
         public static readonly SFML.Graphics.Color COLOR_AVG_WAVE_DATASTREAM = new SFML.Graphics.Color(0, 255, 255);
         public static readonly SFML.Graphics.Color COLOR_SAMPLE_BACKGROUND = new SFML.Graphics.Color(255, 255, 0, 35);
         public static readonly SFML.Graphics.Color COLOR_SAMPLE_AVG_WAVE = new SFML.Graphics.Color(255, 0, 0);
+        public static readonly SFML.Graphics.Color COLOR_THRESHOLD_LINE = new SFML.Graphics.Color(145, 145, 145);
 
         // MainWindow user inputs values
         public static int MAIN_W_SAMPLE_BUFFER_DURATION_MS { get; set; } = BASE_MAIN_W_SAMPLE_BUFFER_DURATION_MS;

@@ -17,18 +17,18 @@ namespace WpfSoundMonitor.Core
         private static VertexArray _vaSoundWave = new VertexArray();
         private static VertexArray _vaAvgWave = new VertexArray();
         private static List<DrawableAdvancedSample> _drawablesSamples = new List<DrawableAdvancedSample>();
+        private static VertexArray _vaThreshold = new VertexArray();
+        private static VertexArray _vaSampleMaxLimit = new VertexArray();
 
         private static List<float> _samplesMaxValues = new List<float>();
         private static List<float> _samplesAvgValues = new List<float>();
         private static int _samplesCount = 0;
         private static float _samplesValuesSum = 0.0f;
-        //private static float _samplesAbsMaxValue = 0.0f;
 
         #region GET_SET
 
         public static int SamplesCount { get { return _samplesCount; } }
         public static float SamplesCurrentValue { get { return _samplesMaxValues.LastOrDefault(); } }
-        //public static float SamplesMaxValue { get { return _samplesAbsMaxValue; } }
         public static float SamplesCurrentAvgValue { get { return _samplesAvgValues.LastOrDefault(); } }
 
         #endregion
@@ -50,7 +50,6 @@ namespace WpfSoundMonitor.Core
             _samplesAvgValues.Clear();
             _samplesCount = 0;
             _samplesValuesSum = 0.0f;
-            //_samplesAbsMaxValue = 0.0f;
         }
 
         /// <summary>
@@ -61,11 +60,13 @@ namespace WpfSoundMonitor.Core
         {
             List<IDrawable> outDrawables = new List<IDrawable>
                 {
+                    _vaThreshold,
+                    _vaSampleMaxLimit,
                     _vaSoundWave,
                     _vaAvgWave,
                 };
 
-            foreach(DrawableAdvancedSample drawableSample in _drawablesSamples)
+            foreach (DrawableAdvancedSample drawableSample in _drawablesSamples)
             {
                 IDrawable[] drawableItems = drawableSample.GetDrawables();
 
@@ -82,9 +83,67 @@ namespace WpfSoundMonitor.Core
         /// <param name="thresholdSamples">Samples that meet the required threshold</param>
         public static void GenerateRender(float[] allSamplesValues, AdvancedSample[] thresholdSamples)
         {
+            TraceThresholdLine();
+
+            TraceSampleMaxLimit();
+
             TraceDatastreamWave(allSamplesValues);
 
             TraceThresholdSamples(thresholdSamples);
+        }
+
+        private static void TraceThresholdLine()
+        {
+            _vaThreshold.Dispose();
+            _vaThreshold = new VertexArray(PrimitiveType.LineStrip, 2);
+
+            float o_x = 0.0f;
+            float o_y = Config.SFML_RENDER_AREA_HEIGHT_PX - ((Config.MAIN_W_START_THRESHOLD * Config.SFML_RENDER_AREA_HEIGHT_PX) / SoundAnalyzer.DatastreamSamplesMaxValue);
+
+            Vertex origin = new Vertex()
+            {
+                Color = Config.COLOR_THRESHOLD_LINE,
+                Position = new Vector2f(o_x, o_y)
+            };
+
+            float e_x = SoundAnalyzer.DatastreamSamplesValues.Count * Config.SOUND_WAVE_DRAW_POINT_X_SPACING;
+            float e_y = Config.SFML_RENDER_AREA_HEIGHT_PX - ((Config.MAIN_W_START_THRESHOLD * Config.SFML_RENDER_AREA_HEIGHT_PX) / SoundAnalyzer.DatastreamSamplesMaxValue);
+
+            Vertex end = new Vertex()
+            {
+                Color = Config.COLOR_THRESHOLD_LINE,
+                Position = new Vector2f(e_x, e_y)
+            };
+
+            _vaThreshold[0] = origin;
+            _vaThreshold[1] = end;
+        }
+
+        private static void TraceSampleMaxLimit()
+        {
+            _vaSampleMaxLimit.Dispose();
+            _vaSampleMaxLimit = new VertexArray(PrimitiveType.LineStrip, 2);
+
+            float o_x = 0.0f;
+            float o_y = Config.SFML_RENDER_AREA_HEIGHT_PX - ((Config.MAIN_W_MAX_AVERAGE_VALUE * Config.SFML_RENDER_AREA_HEIGHT_PX) / SoundAnalyzer.DatastreamSamplesMaxValue);
+
+            Vertex origin = new Vertex()
+            {
+                Color = Config.COLOR_THRESHOLD_LINE,
+                Position = new Vector2f(o_x, o_y)
+            };
+
+            float e_x = SoundAnalyzer.DatastreamSamplesValues.Count * Config.SOUND_WAVE_DRAW_POINT_X_SPACING;
+            float e_y = Config.SFML_RENDER_AREA_HEIGHT_PX - ((Config.MAIN_W_MAX_AVERAGE_VALUE * Config.SFML_RENDER_AREA_HEIGHT_PX) / SoundAnalyzer.DatastreamSamplesMaxValue);
+
+            Vertex end = new Vertex()
+            {
+                Color = Config.COLOR_THRESHOLD_LINE,
+                Position = new Vector2f(e_x, e_y)
+            };
+
+            _vaSampleMaxLimit[0] = origin;
+            _vaSampleMaxLimit[1] = end;
         }
 
         /// <summary>
@@ -173,8 +232,10 @@ namespace WpfSoundMonitor.Core
             }
         }
 
-
-
+        /// <summary>
+        /// Create the vertices to draw the samples datas on the SFML render area
+        /// </summary>
+        /// <param name="thresholdSamples"></param>
         private static void TraceThresholdSamples(AdvancedSample[] thresholdSamples)
         {
             foreach (AdvancedSample sample in thresholdSamples)
@@ -185,6 +246,7 @@ namespace WpfSoundMonitor.Core
 
                 for (d_index = 0; d_index < _drawablesSamples.Count; ++d_index)
                 {
+                    // find the srawable element from the sample GUID
                     if (_drawablesSamples[d_index].SampleGuid == sample.GUID)
                     {
                         drawable = _drawablesSamples[d_index];
@@ -192,7 +254,7 @@ namespace WpfSoundMonitor.Core
                     }
                 }
 
-
+                // Create or update the drawable element of the sample
                 if (drawable == null)
                 {
                     drawable = new DrawableAdvancedSample(sample, SoundAnalyzer.DatastreamSamplesMaxValue);

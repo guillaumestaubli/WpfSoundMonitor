@@ -37,7 +37,9 @@ namespace WpfSoundMonitor.Core
         public static void Init(WasapiRecorder captureDevice, float sampleDurationMs)
         {
             SampleDurationMs = sampleDurationMs;
+            DatastreamSamplesMaxValue = Config.MAIN_W_MAX_AVERAGE_VALUE + 0.05f;
             DatastreamSamplesValues.Clear();
+            ThresholdSamples.Clear();
             _cloclDatastreamSample = new Stopwatch();
             _clockThresholdSample = new Stopwatch();
             CaptureDevice = captureDevice;

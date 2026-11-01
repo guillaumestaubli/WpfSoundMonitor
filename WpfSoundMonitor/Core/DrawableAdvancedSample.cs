@@ -123,18 +123,9 @@ namespace WpfSoundMonitor.Core
             _vaBackground[3] = bottomRight;
         }
 
-        private void InitializeWave()
-        {
-            _vaAverageWave = new VertexArray(PrimitiveType.LineStrip);
-
-            Vertex firstPoint = new Vertex();
-            firstPoint.Color = Config.COLOR_SAMPLE_AVG_WAVE;
-
-            firstPoint.Position = new Vector2f(
-                x: 0.0f,
-                y: 0.0f);
-        }
-
+        /// <summary>
+        /// Update the wave of the sample to display on the SFML render area
+        /// </summary>
         private void UpdateWave()
         {
             _vaAverageWave.Dispose();

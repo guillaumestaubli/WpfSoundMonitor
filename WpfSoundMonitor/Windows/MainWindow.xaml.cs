@@ -5,7 +5,6 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Globalization;
-using System.Text.RegularExpressions;
 
 using NAudio.Wave;
 
@@ -102,7 +101,6 @@ namespace WpfSoundMonitor.Windows
 
                 TxtBox_SamplesCount.Text = SoundWaveTracer.SamplesCount.ToString();
                 TxtBox_CurrentSampleValue.Text = SoundWaveTracer.SamplesCurrentValue.ToString();
-                //TxtBox_SamplesMaxValue.Text = SoundWaveTracer.SamplesMaxValue.ToString();
                 TxtBox_SamplesMaxValue.Text = SoundAnalyzer.DatastreamSamplesMaxValue.ToString();
                 TxtBox_SamplesAvgValue.Text = SoundWaveTracer.SamplesCurrentAvgValue.ToString();
             }

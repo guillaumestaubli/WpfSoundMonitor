@@ -134,6 +134,10 @@
                 Maximum="100" 
                 ValueChanged="ScrollBarSfmlRenderArea_ValueChanged"/>
 
+            <TextBlock Text="Datastream values : "
+                       Margin="5,0,5,5"
+                       FontWeight="Bold"/>
+
             <StackPanel Orientation="Horizontal">
 
                 <TextBlock Text="Samples count : "
