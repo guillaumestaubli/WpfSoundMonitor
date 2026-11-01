@@ -13,6 +13,8 @@ using SFML.Graphics;
 
 using WpfSoundMonitor.Core;
 using WpfSoundMonitor.Logs;
+using System.Runtime.CompilerServices;
+using System.Linq;
 
 namespace WpfSoundMonitor.Windows
 {
@@ -37,6 +39,8 @@ namespace WpfSoundMonitor.Windows
             // Create WIN32 surface in winforms for integration in WPF
             _wpfSfmlSurface = new System.Windows.Forms.Control();
             SfmlHost.Child = _wpfSfmlSurface;
+
+            _wpfSfmlSurface.MouseClick += WpfSfmlSurface_MouseClicked;
 
             // Init SFML window for graphic rendering
             _sfmlWindow = new RenderWindow(_wpfSfmlSurface.Handle);
@@ -377,6 +381,27 @@ namespace WpfSoundMonitor.Windows
             _sfmlViewPosition += offset;
         }
 
+        /// <summary>
+        /// Handle the mouse clicked event inside the SFML render area
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void WpfSfmlSurface_MouseClicked(object? sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            // convert the local coordinates of click in the control in global coordinates in the graph
+            Vector2i globalClick = new Vector2i()
+            {
+                X = (int)_sfmlViewPosition.X + e.X,
+                Y = e.Y
+            };
+
+            int datastreamIndex = globalClick.X / (int)Config.SOUND_WAVE_DRAW_POINT_X_SPACING;
+
+            AdvancedSample? sample = SoundAnalyzer.GetThresholdSampleAtDatastreamIndex(datastreamIndex);
+
+            UpdateSelectedSampleDetails(sample);
+        }
+
         #endregion
 
         /// <summary>
@@ -431,6 +456,23 @@ namespace WpfSoundMonitor.Windows
         private void SfmlRenderArea_ScrollToEnd()
         {
             ScrollBarSfmlRenderArea.Value = ScrollBarSfmlRenderArea.Maximum;
+        }
+
+        private void UpdateSelectedSampleDetails(AdvancedSample? sample = null)
+        {
+            if(sample == null)
+            {
+                TxtBox_SelectedSampleAvgValue.Text = "";
+                TxtBox_SelectedSampleThresholdReached.Text = "";
+            }
+            else
+            {
+                float avgValue = sample.AvgValues.Last();
+                bool reached = avgValue >= Config.MAIN_W_MAX_AVERAGE_VALUE;
+
+                TxtBox_SelectedSampleAvgValue.Text = avgValue.ToString();
+                TxtBox_SelectedSampleThresholdReached.Text = reached.ToString();
+            }
         }
     }
 }

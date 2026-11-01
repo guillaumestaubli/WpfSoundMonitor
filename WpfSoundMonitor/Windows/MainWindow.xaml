@@ -190,6 +190,36 @@
 
             </StackPanel>
 
+            <TextBlock Text="Selected sample details :"
+                       Margin="5,0,5,5"
+                       FontWeight="Bold"/>
+
+            <StackPanel Orientation="Horizontal">
+
+                <TextBlock Text="Last average value : "
+                           Margin ="5,0,5,5"
+                           Width="150"/>
+
+                <TextBox Name="TxtBox_SelectedSampleAvgValue" 
+                         Width="165" 
+                         Margin="0,0,5,5"
+                         IsEnabled="False"/>
+
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+
+                <TextBlock Text="Threshold reached : "
+                           Margin ="5,0,5,5"
+                           Width="150"/>
+
+                <TextBox Name="TxtBox_SelectedSampleThresholdReached" 
+                         Width="165" 
+                         Margin="0,0,5,5"
+                         IsEnabled="False"/>
+
+            </StackPanel>
+
         </StackPanel>
 
     </Grid>

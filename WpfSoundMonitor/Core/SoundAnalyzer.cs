@@ -149,5 +149,18 @@ namespace WpfSoundMonitor.Core
                 _currentDatastreamSample_Count = 0;
             }
         }
+
+        public static AdvancedSample? GetThresholdSampleAtDatastreamIndex(int index)
+        {
+            AdvancedSample? outSample = null;
+
+            foreach(AdvancedSample sample in ThresholdSamples)
+            {
+                if (sample.StartIndex <= index && index <= sample.EndIndex)
+                    outSample = sample;
+            }
+
+            return outSample;
+        }
     }
 }
