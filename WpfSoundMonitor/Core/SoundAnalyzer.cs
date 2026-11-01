@@ -17,15 +17,15 @@ namespace WpfSoundMonitor.Core
         public static bool IsCapturing { get; private set; } = false;
         public static WasapiRecorder? CaptureDevice { get; private set; } = null;
         public static float SampleDurationMs { get; private set; } = 0.0f;
-        public static List<float> SamplesAverageMaxValues { get; private set; } = new List<float>();
+        public static List<float> DatastreamSamplesValues { get; private set; } = new List<float>();
         public static List<AdvancedSample> ThresholdSamples { get; private set; } = new List<AdvancedSample>();
+        public static float DatastreamSamplesMaxValue { get; private set; } = 0.0f;
+
+        private static int _currentDatastreamSample_Count = 0;
+        private static float _currentDatastreamSample_Sum = 0.0f;
         private static AdvancedSample? _currentThresholdSample = null;
-
-        private static int _sampleAverageMaxValue_Count = 0;
-        private static float _sampleAverageMaxValue_Value = 0.0f;
-
-        private static Stopwatch _clock_sample = new Stopwatch();
-        private static Stopwatch _clock_average = new Stopwatch();
+        private static Stopwatch _cloclDatastreamSample = new Stopwatch();
+        private static Stopwatch _clockThresholdSample = new Stopwatch();
 
 
         /// <summary>
@@ -33,13 +33,13 @@ namespace WpfSoundMonitor.Core
         /// Must start the capture process quickly because the internal clock is started here
         /// </summary>
         /// <param name="sampleDurationMs"></param>
-        /// <param name="durationAverageMs"></param>
+        /// <param name="sampleDurationMs"></param>
         public static void Init(WasapiRecorder captureDevice, float sampleDurationMs)
         {
             SampleDurationMs = sampleDurationMs;
-            SamplesAverageMaxValues.Clear();
-            _clock_sample = new Stopwatch();
-            _clock_average = new Stopwatch();
+            DatastreamSamplesValues.Clear();
+            _cloclDatastreamSample = new Stopwatch();
+            _clockThresholdSample = new Stopwatch();
             CaptureDevice = captureDevice;
             CaptureDevice.DataAvailable += OnDataAvailable;
         }
@@ -55,8 +55,8 @@ namespace WpfSoundMonitor.Core
 
             IsCapturing = true;
             CaptureDevice.StartRecording();
-            _clock_sample.Start();
-            _clock_average.Start();
+            _cloclDatastreamSample.Start();
+            _clockThresholdSample.Start();
         }
 
         /// <summary>
@@ -70,8 +70,8 @@ namespace WpfSoundMonitor.Core
 
             IsCapturing = false;
             CaptureDevice.StopRecording();
-            _clock_sample.Stop();
-            _clock_average.Stop();
+            _cloclDatastreamSample.Stop();
+            _clockThresholdSample.Stop();
         }
 
         public static void OnDataAvailable(ReadOnlySpan<byte> buffer, AudioClientBufferFlags flags, long devicePos, long qpcPos)
@@ -93,50 +93,58 @@ namespace WpfSoundMonitor.Core
                 if (abs > bufferMaxValue)
                     bufferMaxValue = abs;
 
-                _sampleAverageMaxValue_Value += bufferMaxValue;
-                ++_sampleAverageMaxValue_Count;
+                _currentDatastreamSample_Sum += bufferMaxValue;
+                ++_currentDatastreamSample_Count;
             }
 
             // calculate the average value of the sample
-            if (_clock_sample.ElapsedMilliseconds >= SampleDurationMs)
+            if (_cloclDatastreamSample.ElapsedMilliseconds >= SampleDurationMs)
             {
-                _clock_sample.Restart();
+                _cloclDatastreamSample.Restart();
 
                 float sampleAverage = 0.0f;
 
-                if (_sampleAverageMaxValue_Count != 0)
-                    sampleAverage = _sampleAverageMaxValue_Value / _sampleAverageMaxValue_Count;
+                if (_currentDatastreamSample_Count != 0)
+                    sampleAverage = _currentDatastreamSample_Sum / _currentDatastreamSample_Count;
 
-                SamplesAverageMaxValues.Add(sampleAverage);
+                DatastreamSamplesValues.Add(sampleAverage);
 
+                // check if the current sample value is the new maximum value of the datastream
+                if (sampleAverage > DatastreamSamplesMaxValue)
+                    DatastreamSamplesMaxValue = sampleAverage;
+
+                // check if the sound level reached the threshold to start the capture of a custom sample
                 if(_currentThresholdSample == null && sampleAverage >= Config.MAIN_W_START_THRESHOLD)
                 {
-                    _clock_average.Start();
-                    _currentThresholdSample = AdvancedSample.OpenSample(SamplesAverageMaxValues.Count - 1, sampleAverage);
+                    // the threshold is reached and no sample is currently rercording => start a new sample
+                    _clockThresholdSample.Restart();
+                    _currentThresholdSample = AdvancedSample.OpenSample(DatastreamSamplesValues.Count - 1, sampleAverage);
                     ThresholdSamples.Add(_currentThresholdSample);
                 }
                 else if(_currentThresholdSample != null)
                 {
-                    if(_clock_average.ElapsedMilliseconds < Config.MAIN_W_ANALYZE_DURATION_MS)
+                    if(_clockThresholdSample.ElapsedMilliseconds < Config.MAIN_W_ANALYZE_DURATION_MS)
                     {
+                        // the record time is not yet reached => append the datastream value to the currently running sample
                         _currentThresholdSample.AppendValue(sampleAverage);
 
                         ThresholdSamples[ThresholdSamples.Count - 1] = _currentThresholdSample;
                     }
-                    else // _clock_average.ElapsedMilliseconds >= Config.MAIN_W_ANALYZE_DURATION_MS
+                    else // _clockThresholdSample.ElapsedMilliseconds >= Config.MAIN_W_ANALYZE_DURATION_MS
                     {
-                        _currentThresholdSample.Close(SamplesAverageMaxValues.Count - 1, sampleAverage);
+                        // the record time is reached => append the last sample value and close the sample
+                        _currentThresholdSample.Close(DatastreamSamplesValues.Count - 1, sampleAverage);
 
                         ThresholdSamples[ThresholdSamples.Count - 1] = _currentThresholdSample;
 
                         _currentThresholdSample = null;
 
-                        _clock_average.Reset();
+                        _clockThresholdSample.Reset();
                     }
                 }
 
-                _sampleAverageMaxValue_Value = 0.0f;
-                _sampleAverageMaxValue_Count = 0;
+                _currentDatastreamSample_Sum = 0.0f;
+                _currentDatastreamSample_Count = 0;
             }
         }
     }

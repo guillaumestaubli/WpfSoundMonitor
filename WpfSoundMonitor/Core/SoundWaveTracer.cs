@@ -22,13 +22,13 @@ namespace WpfSoundMonitor.Core
         private static List<float> _samplesAvgValues = new List<float>();
         private static int _samplesCount = 0;
         private static float _samplesValuesSum = 0.0f;
-        private static float _samplesAbsMaxValue = 0.0f;
+        //private static float _samplesAbsMaxValue = 0.0f;
 
         #region GET_SET
 
         public static int SamplesCount { get { return _samplesCount; } }
         public static float SamplesCurrentValue { get { return _samplesMaxValues.LastOrDefault(); } }
-        public static float SamplesMaxValue { get { return _samplesAbsMaxValue; } }
+        //public static float SamplesMaxValue { get { return _samplesAbsMaxValue; } }
         public static float SamplesCurrentAvgValue { get { return _samplesAvgValues.LastOrDefault(); } }
 
         #endregion
@@ -50,7 +50,7 @@ namespace WpfSoundMonitor.Core
             _samplesAvgValues.Clear();
             _samplesCount = 0;
             _samplesValuesSum = 0.0f;
-            _samplesAbsMaxValue = 0.0f;
+            //_samplesAbsMaxValue = 0.0f;
         }
 
         /// <summary>
@@ -100,9 +100,6 @@ namespace WpfSoundMonitor.Core
                 ++_samplesCount;
                 _samplesValuesSum += values[i];
 
-                if (values[i] > _samplesAbsMaxValue)
-                    _samplesAbsMaxValue = values[i];
-
                 _samplesAvgValues.Add(_samplesValuesSum / _samplesCount);
 
                 AppendLastValueToSoundWaveVertexArray();
@@ -151,7 +148,7 @@ namespace WpfSoundMonitor.Core
         {
             for (int i = 0; i < _samplesMaxValues.Count; ++i)
             {
-                float new_y = Config.SFML_RENDER_AREA_HEIGHT_PX - ((_samplesMaxValues[i] * Config.SFML_RENDER_AREA_HEIGHT_PX) / _samplesAbsMaxValue);
+                float new_y = Config.SFML_RENDER_AREA_HEIGHT_PX - ((_samplesMaxValues[i] * Config.SFML_RENDER_AREA_HEIGHT_PX) / SoundAnalyzer.DatastreamSamplesMaxValue);
 
                 Vertex vertex = _vaSoundWave[(uint)i];
                 vertex.Position.Y = new_y;
@@ -167,7 +164,7 @@ namespace WpfSoundMonitor.Core
         {
             for (int i = 0; i < _samplesAvgValues.Count; ++i)
             {
-                float new_y = Config.SFML_RENDER_AREA_HEIGHT_PX - ((_samplesAvgValues[i] * Config.SFML_RENDER_AREA_HEIGHT_PX) / _samplesAbsMaxValue);
+                float new_y = Config.SFML_RENDER_AREA_HEIGHT_PX - ((_samplesAvgValues[i] * Config.SFML_RENDER_AREA_HEIGHT_PX) / SoundAnalyzer.DatastreamSamplesMaxValue);
 
                 Vertex vertex = _vaAvgWave[(uint)i];
                 vertex.Position.Y = new_y;
@@ -198,7 +195,7 @@ namespace WpfSoundMonitor.Core
 
                 if (drawable == null)
                 {
-                    drawable = new DrawableAdvancedSample(sample, _samplesAbsMaxValue);
+                    drawable = new DrawableAdvancedSample(sample, SoundAnalyzer.DatastreamSamplesMaxValue);
 
                     _drawablesSamples.Add(drawable);
                 }

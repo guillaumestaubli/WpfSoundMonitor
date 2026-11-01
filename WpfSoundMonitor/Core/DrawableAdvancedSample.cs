@@ -2,6 +2,7 @@
 using SFML.System;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace WpfSoundMonitor.Core
@@ -141,10 +142,8 @@ namespace WpfSoundMonitor.Core
 
             for(int i = _sample.StartIndex; i < _sample.EndIndex; ++i)
             {
-                float value = SoundAnalyzer.SamplesAverageMaxValues[i];
-
                 float x = i * Config.SOUND_WAVE_DRAW_POINT_X_SPACING;
-                float y = Config.SFML_RENDER_AREA_HEIGHT_PX - (_sample.AvgValues[i - _sample.StartIndex] * Config.SFML_RENDER_AREA_HEIGHT_PX);
+                float y = Config.SFML_RENDER_AREA_HEIGHT_PX - ((_sample.AvgValues[i - _sample.StartIndex] * Config.SFML_RENDER_AREA_HEIGHT_PX) / SoundAnalyzer.DatastreamSamplesMaxValue);
 
                 Vector2f pos = new Vector2f(x, y);
 

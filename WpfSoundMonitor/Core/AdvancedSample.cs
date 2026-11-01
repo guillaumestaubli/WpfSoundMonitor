@@ -50,8 +50,6 @@ namespace WpfSoundMonitor.Core
         /// <param name="value">Value of the datastream to append</param>
         public void AppendValue(float value)
         {
-            // BUG HERE !!!
-
             ++ValuesCount;
             ValuesSum += value;
 

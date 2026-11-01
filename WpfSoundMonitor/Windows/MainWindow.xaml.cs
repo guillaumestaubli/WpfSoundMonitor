@@ -95,14 +95,15 @@ namespace WpfSoundMonitor.Windows
         {
             if (SoundAnalyzer.IsCapturing)
             {
-                SoundWaveTracer.GenerateRender(SoundAnalyzer.SamplesAverageMaxValues.ToArray(), SoundAnalyzer.ThresholdSamples.ToArray());
+                SoundWaveTracer.GenerateRender(SoundAnalyzer.DatastreamSamplesValues.ToArray(), SoundAnalyzer.ThresholdSamples.ToArray());
 
-                UpdateSfmlRenderAreaScrollbarMinMaxValues(SoundAnalyzer.SamplesAverageMaxValues.Count);
+                UpdateSfmlRenderAreaScrollbarMinMaxValues(SoundAnalyzer.DatastreamSamplesValues.Count);
                 SfmlRenderArea_ScrollToEnd();
 
                 TxtBox_SamplesCount.Text = SoundWaveTracer.SamplesCount.ToString();
                 TxtBox_CurrentSampleValue.Text = SoundWaveTracer.SamplesCurrentValue.ToString();
-                TxtBox_SamplesMaxValue.Text = SoundWaveTracer.SamplesMaxValue.ToString();
+                //TxtBox_SamplesMaxValue.Text = SoundWaveTracer.SamplesMaxValue.ToString();
+                TxtBox_SamplesMaxValue.Text = SoundAnalyzer.DatastreamSamplesMaxValue.ToString();
                 TxtBox_SamplesAvgValue.Text = SoundWaveTracer.SamplesCurrentAvgValue.ToString();
             }
 
