@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace WpfSoundMonitor.Core
@@ -16,6 +17,9 @@ namespace WpfSoundMonitor.Core
         public List<float> AvgValues { get; private set; } = new List<float>();
         public int ValuesCount { get; private set; } = 0;
         public float ValuesSum { get; private set; } = 0.0f;
+
+        public bool HasReachedThreshold { get; private set; } = false;
+        public bool HasBeenManaged { get; private set; } = false;
 
         /// <summary>
         /// Constructor for the object
@@ -71,6 +75,19 @@ namespace WpfSoundMonitor.Core
             EndIndex = endIndex;
 
             IsOpen = false;
+
+            if(AvgValues.Last() >= Config.MAIN_W_MAX_AVERAGE_VALUE)
+            {
+                HasReachedThreshold = true;
+            }
         }
+
+        public void SetManagedState()
+        {
+            HasBeenManaged = true;
+        }
+        
+        
+
     }
 }

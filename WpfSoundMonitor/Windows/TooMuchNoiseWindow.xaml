@@ -1,0 +1,24 @@
+﻿<Window x:Class="WpfSoundMonitor.Windows.TooMuchNoiseWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfSoundMonitor.Windows"
+        mc:Ignorable="d"
+        Title="TooMuchNoiseWindow" Height="450" Width="800"
+        AllowsTransparency="True"
+        WindowStyle="None">
+    <Window.Background>
+        <SolidColorBrush Opacity="0.1" Color="Red"></SolidColorBrush>
+    </Window.Background>
+    <Grid>
+        <Label Name="LblTooMuchNoise"
+            Content="TROP DE BRUIT !" 
+            HorizontalAlignment="Center" 
+            Margin="0,0,0,0" 
+            VerticalAlignment="Center"
+            Foreground="Red"
+            FontSize="100"/>  
+        
+    </Grid>
+</Window>

@@ -162,5 +162,15 @@ namespace WpfSoundMonitor.Core
 
             return outSample;
         }
+
+        public static bool UpdateThresholdSample(int index, AdvancedSample sample)
+        {
+            if (index < 0 || index >= ThresholdSamples.Count)
+                return false;
+
+            ThresholdSamples[index] = sample;
+
+            return true;
+        }
     }
 }

@@ -5,6 +5,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Globalization;
+using System.Collections;
 
 using NAudio.Wave;
 
@@ -15,6 +16,8 @@ using WpfSoundMonitor.Core;
 using WpfSoundMonitor.Logs;
 using System.Runtime.CompilerServices;
 using System.Linq;
+using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace WpfSoundMonitor.Windows
 {
@@ -28,6 +31,8 @@ namespace WpfSoundMonitor.Windows
         private Vector2f _sfmlViewSize = new Vector2f(0.0f, 0.0f);
         private RenderWindow _sfmlWindow;
         private System.Windows.Forms.Control _wpfSfmlSurface;
+        private TooMuchNoiseWindow _tooMuchNoiseWindow = new TooMuchNoiseWindow();
+        
 
         /// <summary>
         /// Default constructor
@@ -68,6 +73,8 @@ namespace WpfSoundMonitor.Windows
             CaptureDeviceManager.LoadCaptureDevicesFromComputer();
 
             DisplayCaptureDevicesList();
+
+            this.Closing += MainWindow_Closing;
         }
 
         /// <summary>
@@ -109,6 +116,9 @@ namespace WpfSoundMonitor.Windows
                 TxtBox_SamplesMaxValue.Text = SoundAnalyzer.DatastreamSamplesMaxValue.ToString();
                 TxtBox_SamplesAvgValue.Text = SoundWaveTracer.SamplesCurrentAvgValue.ToString();
             }
+
+            // check if any sample has reached the threshold value and the warning window need to be shown
+            ManageCapturedSamples();
 
             if (_sfmlWindow != null)
             {
@@ -245,7 +255,7 @@ namespace WpfSoundMonitor.Windows
             if (!int.TryParse(TxtBox_SampleDurationMs.Text, CultureInfo.InvariantCulture, out sampleBufferDurationMs))
             {
                 Logger.LogWarn("MainWindow.StartCapture_LoadUserInputValues", $"Can't parse TxtBox_SampleDurationMs.Text = {TxtBox_SampleDurationMs.Text} as int");
-                 
+
                 success = false;
             }
 
@@ -402,6 +412,11 @@ namespace WpfSoundMonitor.Windows
             UpdateSelectedSampleDetails(sample);
         }
 
+        private void MainWindow_Closing(object? sender, CancelEventArgs e)
+        {
+            _tooMuchNoiseWindow.Close();
+        }
+
         #endregion
 
         /// <summary>
@@ -460,7 +475,7 @@ namespace WpfSoundMonitor.Windows
 
         private void UpdateSelectedSampleDetails(AdvancedSample? sample = null)
         {
-            if(sample == null)
+            if (sample == null)
             {
                 TxtBox_SelectedSampleAvgValue.Text = "";
                 TxtBox_SelectedSampleThresholdReached.Text = "";
@@ -472,6 +487,25 @@ namespace WpfSoundMonitor.Windows
 
                 TxtBox_SelectedSampleAvgValue.Text = avgValue.ToString();
                 TxtBox_SelectedSampleThresholdReached.Text = reached.ToString();
+            }
+        }
+
+
+        private void ManageCapturedSamples()
+        {
+            for (int i = 0; i < SoundAnalyzer.ThresholdSamples.Count; ++i)
+            {
+                AdvancedSample sample = SoundAnalyzer.ThresholdSamples[i];
+
+                if (sample.IsOpen == false && sample.HasReachedThreshold == true && sample.HasBeenManaged == false)
+                {
+                    sample.SetManagedState();
+
+                    _ = SoundAnalyzer.UpdateThresholdSample(i, sample);
+
+                    if (!_tooMuchNoiseWindow.IsActive)
+                        _tooMuchNoiseWindow.Show();
+                }
             }
         }
     }
