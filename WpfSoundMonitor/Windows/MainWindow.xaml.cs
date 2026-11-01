@@ -12,6 +12,7 @@ using SFML.System;
 using SFML.Graphics;
 
 using WpfSoundMonitor.Core;
+using WpfSoundMonitor.Logs;
 
 namespace WpfSoundMonitor.Windows
 {
@@ -154,6 +155,8 @@ namespace WpfSoundMonitor.Windows
 
             if (lstBox.SelectedItem == null || lstBox.SelectedItem is not ListBoxItem)
             {
+                Logger.LogError("MainWindow.Lstbox_CaptureDevices_SelectionChanged", "An error occured when trying to fetch capture device from listbox selection");
+
                 string message =
                     $"An error occured at {nameof(MainWindow)}.{nameof(Lstbox_CaptureDevices_SelectionChanged)} " +
                     $"when trying to fetch capture device from listbox selection";
@@ -184,6 +187,8 @@ namespace WpfSoundMonitor.Windows
         {
             if (CaptureDeviceManager.CurrentWasapiRecorder == null)
             {
+                Logger.LogError("MainWindow.Btn_StartCapture_Click", $"Capture device not set in {nameof(CaptureDeviceManager)}");
+
                 string message =
                     $"Capture device not set in {nameof(CaptureDeviceManager)} " +
                     $"at {nameof(MainWindow)}.{nameof(Btn_StartCapture_Click)}";
@@ -198,6 +203,8 @@ namespace WpfSoundMonitor.Windows
             // Fetch the datas from the user input and check if any errors occured during the process
             if (!StartCapture_LoadUserInputValues())
             {
+                Logger.LogError("MainWindow.Btn_StartCapture_Click", $"Failed to load user inputs");
+
                 string message =
                     $"An error occured during {nameof(MainWindow)}.{nameof(StartCapture_LoadUserInputValues)}. " +
                     $"Impossible to load user inputs";
@@ -233,21 +240,29 @@ namespace WpfSoundMonitor.Windows
 
             if (!int.TryParse(TxtBox_SampleDurationMs.Text, CultureInfo.InvariantCulture, out sampleBufferDurationMs))
             {
+                Logger.LogWarn("MainWindow.StartCapture_LoadUserInputValues", $"Can't parse TxtBox_SampleDurationMs.Text = {TxtBox_SampleDurationMs.Text} as int");
+                 
                 success = false;
             }
 
             if (!float.TryParse(TxtBox_StartThreshold.Text, CultureInfo.InvariantCulture, out startThreshold))
             {
+                Logger.LogWarn("MainWindow.StartCapture_LoadUserInputValues", $"Can't parse TxtBox_StartThreshold.Text = {TxtBox_StartThreshold.Text} as float");
+
                 success = false;
             }
 
             if (!int.TryParse(TxtBox_AnalyzeDuration.Text, CultureInfo.InvariantCulture, out analyzeDurationMs))
             {
+                Logger.LogWarn("MainWindow.StartCapture_LoadUserInputValues", $"Can't parse TxtBox_AnalyzeDuration.Text = {TxtBox_AnalyzeDuration.Text} as int");
+
                 success = false;
             }
 
             if (!float.TryParse(TxtBox_MaxAverageValue.Text, CultureInfo.InvariantCulture, out maxAverageValue))
             {
+                Logger.LogWarn("MainWindow.StartCapture_LoadUserInputValues", $"Can't parse TxtBox_MaxAverageValue.Text = {TxtBox_MaxAverageValue.Text} as float");
+
                 success = false;
             }
 
